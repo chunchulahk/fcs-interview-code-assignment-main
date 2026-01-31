@@ -1,0 +1,90 @@
+========================
+STORE ENDPOINTS
+========================
+
+1) List all stores
+curl -X GET "http://localhost:8080/store"
+
+2) Get store by id (example id=1)
+curl -X GET "http://localhost:8080/store/1"
+
+3) Create store
+curl -X POST "http://localhost:8080/store" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"Store-Test-1\",\"quantityProductsInStock\":100}"
+
+4) Update store (PUT)
+curl -X PUT "http://localhost:8080/store/1" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"Store-Updated\",\"quantityProductsInStock\":150}"
+
+5) Patch store (PATCH)
+curl -X PATCH "http://localhost:8080/store/1" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"Store-Patched\",\"quantityProductsInStock\":200}"
+
+6) Delete store
+curl -X DELETE "http://localhost:8080/store/1"
+
+
+========================
+PRODUCT ENDPOINTS
+========================
+
+1) List all products
+curl -X GET "http://localhost:8080/product"
+
+2) Get product by id (example id=1)
+curl -X GET "http://localhost:8080/product/1"
+
+3) Create product
+curl -X POST "http://localhost:8080/product" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"New-Product\",\"description\":\"Test product\",\"price\":100,\"stock\":5}"
+
+4) Delete product
+curl -X DELETE "http://localhost:8080/product/1"
+
+
+========================
+WAREHOUSE ENDPOINTS
+========================
+
+1) List all warehouses
+curl -X GET "http://localhost:8080/warehouse"
+
+2) Create warehouse
+curl -X POST "http://localhost:8080/warehouse" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"businessUnitCode\":\"BU-001\",\"location\":\"ZWOLLE-001\",\"capacity\":40,\"stock\":10}"
+
+3) Get warehouse by BusinessUnitCode
+curl -X GET "http://localhost:8080/warehouse/BU-001"
+
+4) Archive warehouse
+curl -X DELETE "http://localhost:8080/warehouse/BU-001"
+
+5) Replace warehouse (replacement endpoint)
+curl -X POST "http://localhost:8080/warehouse/BU-001/replacement" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"businessUnitCode\":\"BU-002\",\"location\":\"ZWOLLE-001\",\"capacity\":40,\"stock\":10}"
+
+
+========================
+WAREHOUSE VALIDATION FAIL CASES
+========================
+
+1) Invalid location
+curl -X POST "http://localhost:8080/warehouse" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"businessUnitCode\":\"BU-ERR-1\",\"location\":\"INVALID\",\"capacity\":40,\"stock\":10}"
+
+2) Stock > Capacity
+curl -X POST "http://localhost:8080/warehouse" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"businessUnitCode\":\"BU-ERR-2\",\"location\":\"ZWOLLE-001\",\"capacity\":5,\"stock\":10}"
+
+3) Duplicate BusinessUnitCode
+curl -X POST "http://localhost:8080/warehouse" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"businessUnitCode\":\"BU-001\",\"location\":\"ZWOLLE-001\",\"capacity\":40,\"stock\":10}"
