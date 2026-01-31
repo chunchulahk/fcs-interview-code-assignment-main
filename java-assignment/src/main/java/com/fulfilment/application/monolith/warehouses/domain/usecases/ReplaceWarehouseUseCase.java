@@ -7,12 +7,15 @@ import com.fulfilment.application.monolith.warehouses.domain.ports.ReplaceWareho
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.jboss.logging.Logger;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 @ApplicationScoped
 public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
-
+  private static final Logger LOGGER =
+          Logger.getLogger(ReplaceWarehouseUseCase.class);
   private final WarehouseStore warehouseStore;
   private final LocationGateway locationGateway;
 
@@ -82,9 +85,10 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
     //  Archive old warehouse
     current.archivedAt = LocalDateTime.now();
     warehouseStore.update(current);
-
+    LOGGER.info("update warehouse: " + current.businessUnitCode);
     //  Create replacement warehouse
     newWarehouse.createdAt = LocalDateTime.now();
     warehouseStore.create(newWarehouse);
+    LOGGER.info("new warehouse created: " + newWarehouse.businessUnitCode);
   }
 }

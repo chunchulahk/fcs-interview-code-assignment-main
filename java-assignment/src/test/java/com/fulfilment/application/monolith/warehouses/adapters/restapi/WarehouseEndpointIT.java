@@ -2,6 +2,7 @@ package com.fulfilment.application.monolith.warehouses.adapters.restapi;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 import org.junit.jupiter.api.Test;
@@ -10,52 +11,51 @@ import org.junit.jupiter.api.Test;
 public class WarehouseEndpointIT {
 
   @Test
-  public void testSimpleListWarehouses() {
+  public void testListWarehouses() {
 
     final String path = "warehouse";
 
-    // List all, should have all 3 products the database has initially:
+    // verify initial warehouses from import.sql
     given()
-        .when()
-        .get(path)
-        .then()
-        .statusCode(200)
-        .body(containsString("MWH.001"), containsString("MWH.012"), containsString("MWH.023"));
+            .when()
+            .get(path)
+            .then()
+            .statusCode(200)
+            .body(
+                    containsString("MWH.001"),
+                    containsString("MWH.012"),
+                    containsString("MWH.023"));
   }
 
   @Test
-  public void testSimpleCheckingArchivingWarehouses() {
+  public void testArchiveWarehouse() {
 
-    // Uncomment the following lines to test the WarehouseResourceImpl implementation
+    final String path = "warehouse";
 
-    // final String path = "warehouse";
+    // sanity check before delete
+    given()
+            .when()
+            .get(path)
+            .then()
+            .statusCode(200)
+            .body(containsString("MWH.001"));
 
-    // List all, should have all 3 products the database has initially:
-    // given()
-    //     .when()
-    //     .get(path)
-    //     .then()
-    //     .statusCode(200)
-    //     .body(
-    //         containsString("MWH.001"),
-    //         containsString("MWH.012"),
-    //         containsString("MWH.023"),
-    //         containsString("ZWOLLE-001"),
-    //         containsString("AMSTERDAM-001"),
-    //         containsString("TILBURG-001"));
+    // archive warehouse by business unit code
+    given()
+            .when()
+            .delete(path + "/MWH.001")
+            .then()
+            .statusCode(204);
 
-    // // Archive the ZWOLLE-001:
-    // given().when().delete(path + "/1").then().statusCode(204);
-
-    // // List all, ZWOLLE-001 should be missing now:
-    // given()
-    //     .when()
-    //     .get(path)
-    //     .then()
-    //     .statusCode(200)
-    //     .body(
-    //         not(containsString("ZWOLLE-001")),
-    //         containsString("AMSTERDAM-001"),
-    //         containsString("TILBURG-001"));
+    // verify archived warehouse is no longer listed
+    given()
+            .when()
+            .get(path)
+            .then()
+            .statusCode(200)
+            .body(
+                    not(containsString("MWH.001")),
+                    containsString("MWH.012"),
+                    containsString("MWH.023"));
   }
 }
