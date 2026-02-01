@@ -1,0 +1,97 @@
+JAVA CODE ASSIGNMENT – DOCKER (PROD ONLY)
+=================================
+
+This document contains the COMPLETE and FINAL steps to run the Java Code Assignment
+using Docker with ONLY PROD configuration, as requested in the assignment theme.
+
+================================================
+1. PREREQUISITES
+================================================
+- JDK 17 or higher installed
+- Docker Desktop running
+
+================================================
+2. POSTGRESQL SETUP (USING DOCKER IMAGE)
+================================================
+PostgreSQL image is NOT built manually.
+We use the OFFICIAL PostgreSQL Docker image.
+
+Command to start PostgreSQL:
+
+docker run -d --name quarkus_test -e POSTGRES_USER=quarkus_test -e POSTGRES_PASSWORD=quarkus_test -e POSTGRES_DB=quarkus_test -p 15432:5432 postgres:13.3
+
+Explanation:
+- postgres:13.3 → official PostgreSQL image
+- 15432 → exposed port on host
+- quarkus_test → database, user, and password
+
+Verify PostgreSQL is running:
+docker ps
+
+Expected:
+Container name: quarkus_test
+
+================================================
+3. BUILD THE APPLICATION
+================================================
+Go to project root (java-assignment) and run:
+
+mvnw.cmd clean package
+
+This generates:
+target/quarkus-app/
+
+================================================
+4. BUILD DOCKER IMAGE FOR APPLICATION
+================================================
+Use the provided Quarkus JVM Dockerfile:
+
+docker build -f src/main/docker/Dockerfile.jvm -t java-code-assignment .
+
+================================================
+5. RUN APPLICATION IN DOCKER (PROD PROFILE)
+================================================
+When running inside Docker, localhost refers to the container itself.
+So we override the DB URL using host.docker.internal.
+
+Command:
+
+docker run -e QUARKUS_PROFILE=prod -e QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://host.docker.internal:15432/quarkus_test -p 8080:8080 java-code-assignment
+
+================================================
+6. VERIFY APPLICATION
+================================================
+Open browser:
+
+http://localhost:8080
+
+Optional health check:
+http://localhost:8080/q/health
+
+================================================
+7. APPLICATION.PROPERTIES (PROD ONLY)
+================================================
+Only PROD configuration is used:
+
+%prod.quarkus.datasource.db-kind=postgresql
+%prod.quarkus.datasource.username=quarkus_test
+%prod.quarkus.datasource.password=quarkus_test
+%prod.quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:15432/quarkus_test
+%prod.quarkus.datasource.jdbc.max-size=8
+%prod.quarkus.datasource.jdbc.min-size=2
+
+quarkus.hibernate-orm.database.generation=drop-and-create
+quarkus.hibernate-orm.log.sql=true
+quarkus.hibernate-orm.sql-load-script=import.sql
+
+================================================
+8. ASSESSMENT EXPLANATION (READY TO SAY)
+================================================
+PostgreSQL is run using Docker to avoid local database installation.
+The application is containerized using the provided Quarkus JVM Dockerfile
+and executed using the PROD profile.
+Docker networking is handled using host.docker.internal.
+
+================================================
+STATUS: ASSIGNMENT READY
+================================================
