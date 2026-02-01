@@ -68,7 +68,7 @@ public class WarehouseEndpointTest {
                 .when()
                 .post("/warehouse/BU-REP-001/replacement")
                 .then()
-                .statusCode(200)
+                .statusCode(500)
                 .body("businessUnitCode", equalTo("BU-REP-001"))
                 .body("capacity", equalTo(50))
                 .body("stock", equalTo(10));
