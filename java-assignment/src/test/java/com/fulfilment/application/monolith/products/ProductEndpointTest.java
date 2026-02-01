@@ -12,7 +12,7 @@ public class ProductEndpointTest {
 
   @Test
   public void testCrudProduct() {
-    final String path = "product";
+    final String path = "/product";
 
     // List all, should have all 3 products the database has initially:
     given()

@@ -13,7 +13,7 @@ public class WarehouseEndpointIT {
   @Test
   public void testListWarehouses() {
 
-    final String path = "warehouse";
+    final String path = "/warehouse";
 
     // verify initial warehouses from import.sql
     given()
@@ -30,7 +30,7 @@ public class WarehouseEndpointIT {
   @Test
   public void testArchiveWarehouse() {
 
-    final String path = "warehouse";
+    final String path = "/warehouse";
 
     // sanity check before delete
     given()
