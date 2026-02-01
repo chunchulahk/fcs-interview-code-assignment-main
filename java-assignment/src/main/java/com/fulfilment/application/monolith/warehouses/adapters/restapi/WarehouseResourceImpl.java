@@ -58,7 +58,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
         archiveWarehouseUseCase.archive(warehouse);
     }
 
-    @Override
+    /*@Override
     @Transactional
     public com.warehouse.api.beans.Warehouse replaceTheCurrentActiveWarehouse(
             String businessUnitCode,
@@ -68,7 +68,22 @@ public class WarehouseResourceImpl implements WarehouseResource {
         replacement.businessUnitCode = businessUnitCode;
         replaceWarehouseUseCase.replace(replacement);
         return toResponse(replacement);
+    }*/
+
+    @Override
+    @Transactional
+    public com.warehouse.api.beans.Warehouse replaceTheCurrentActiveWarehouse(
+            String businessUnitCode,
+            com.warehouse.api.beans.Warehouse data) {
+
+        Warehouse replacement = toDomain(data);
+        replacement.businessUnitCode = businessUnitCode;
+        replaceWarehouseUseCase.replace(replacement);
+        Warehouse persisted =
+                warehouseRepository.findByBusinessUnitCode(businessUnitCode);
+        return toResponse(persisted);
     }
+
 
     private Warehouse toDomain(com.warehouse.api.beans.Warehouse dto) {
         Warehouse w = new Warehouse();

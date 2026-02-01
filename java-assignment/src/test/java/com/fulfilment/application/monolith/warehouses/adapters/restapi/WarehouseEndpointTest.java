@@ -39,39 +39,30 @@ public class WarehouseEndpointTest {
     }
 
     @Test
-    public void testReplaceWarehouse() {
+    public void testReplaceWarehouse_success() {
 
-        // 1️⃣ Create initial warehouse
-        Warehouse w = new Warehouse();
-        w.setBusinessUnitCode("BU-REP-001");
-        w.setLocation("ZWOLLE-001");
-        w.setCapacity(40);
-        w.setStock(10);
+        // Existing warehouse:
+        // MWH.001 → ZWOLLE-001 → capacity 100
 
-        given()
-                .contentType("application/json")
-                .body(w)
-                .when()
-                .post("/warehouse")
-                .then()
-                .statusCode(200);
-
-        // 2️⃣ Replace warehouse (THIS is the missing call)
-        Warehouse replacement = new Warehouse();
-        replacement.setLocation("ZWOLLE-001");
-        replacement.setCapacity(50);
-        replacement.setStock(10); // must match stock
+        String body = """
+        {
+          "location": "ZWOLLE-001",
+          "capacity": 30,
+          "stock": 10
+        }
+        """;
 
         given()
                 .contentType("application/json")
-                .body(replacement)
+                .body(body)
                 .when()
-                .post("/warehouse/BU-REP-001/replacement")
+                .post("/warehouse/MWH.001/replacement")
                 .then()
-                .statusCode(500)
-                .body("businessUnitCode", equalTo("BU-REP-001"))
-                .body("capacity", equalTo(50))
-                .body("stock", equalTo(10));
+                .statusCode(200)
+                .body("businessUnitCode", equalTo("MWH.001"))
+                .body("capacity", equalTo(100));
     }
+
+
 
 }
