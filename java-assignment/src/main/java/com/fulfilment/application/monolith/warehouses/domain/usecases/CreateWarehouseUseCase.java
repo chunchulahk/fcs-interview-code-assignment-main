@@ -1,5 +1,7 @@
 package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
+import com.fulfilment.application.monolith.common.exceptions.BusinessRuleViolationException;
+import com.fulfilment.application.monolith.common.exceptions.DuplicateResourceException;
 import com.fulfilment.application.monolith.location.LocationGateway;
 import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
@@ -31,28 +33,28 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
   public void create(Warehouse warehouse) {
 
     if (warehouse == null) {
-      throw new IllegalArgumentException("Warehouse must not be null");
+      throw new BusinessRuleViolationException("Warehouse must not be null");
     }
 
     if (warehouse.businessUnitCode == null || warehouse.businessUnitCode.isBlank()) {
-      throw new IllegalArgumentException("Business Unit Code is required");
+      throw new BusinessRuleViolationException("Business Unit Code is required");
     }
 
     if (warehouseStore.findByBusinessUnitCode(warehouse.businessUnitCode) != null) {
-      throw new IllegalStateException("Business Unit Code already exists");
+      throw new DuplicateResourceException("Business Unit Code already exists");
     }
 
     Location location = locationGateway.resolveByIdentifier(warehouse.location);
     if (location == null) {
-      throw new IllegalArgumentException("Invalid warehouse location");
+      throw new BusinessRuleViolationException("Invalid warehouse location");
     }
 
     if (warehouse.capacity == null || warehouse.capacity > location.maxCapacity) {
-      throw new IllegalArgumentException("Capacity exceeds location limit");
+      throw new BusinessRuleViolationException("Capacity exceeds location limit");
     }
 
     if (warehouse.stock == null || warehouse.stock > warehouse.capacity) {
-      throw new IllegalArgumentException("Stock exceeds capacity");
+      throw new BusinessRuleViolationException("Stock exceeds capacity");
     }
 
     warehouse.createdAt = LocalDateTime.now();

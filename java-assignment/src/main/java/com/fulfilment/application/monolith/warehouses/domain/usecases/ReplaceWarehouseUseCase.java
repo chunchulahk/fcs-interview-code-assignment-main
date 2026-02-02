@@ -1,5 +1,7 @@
 package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
+import com.fulfilment.application.monolith.common.exceptions.BusinessRuleViolationException;
+import com.fulfilment.application.monolith.common.exceptions.ResourceNotFoundException;
 import com.fulfilment.application.monolith.location.LocationGateway;
 import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
@@ -31,7 +33,7 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
   public void replace(Warehouse newWarehouse) {
 
     if (newWarehouse == null) {
-      throw new IllegalArgumentException("Warehouse must not be null");
+      throw new BusinessRuleViolationException("Warehouse must not be null");
     }
 
     //  Load current active warehouse
@@ -39,7 +41,7 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
             warehouseStore.findByBusinessUnitCode(newWarehouse.businessUnitCode);
 
     if (current == null || current.archivedAt != null) {
-      throw new IllegalStateException("Active warehouse not found");
+      throw new ResourceNotFoundException("Active warehouse not found");
     }
 
     //  Location validation
@@ -47,12 +49,12 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
             locationGateway.resolveByIdentifier(newWarehouse.location);
 
     if (location == null) {
-      throw new IllegalArgumentException("Invalid warehouse location");
+      throw new BusinessRuleViolationException("Invalid warehouse location");
     }
 
     //  Capacity must handle existing stock
     if (newWarehouse.capacity < current.stock) {
-      throw new IllegalArgumentException(
+      throw new BusinessRuleViolationException(
               "New capacity cannot be less than existing stock");
     }
 

@@ -1,5 +1,6 @@
 package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
+import com.fulfilment.application.monolith.common.exceptions.BusinessRuleViolationException;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.ArchiveWarehouseOperation;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
@@ -23,11 +24,11 @@ public class ArchiveWarehouseUseCase implements ArchiveWarehouseOperation {
   public void archive(Warehouse warehouse) {
 
     if (warehouse == null) {
-      throw new IllegalArgumentException("Warehouse must not be null");
+      throw new BusinessRuleViolationException("Warehouse must not be null");
     }
 
     if (warehouse.archivedAt != null) {
-      throw new IllegalStateException("Warehouse already archived");
+      throw new BusinessRuleViolationException("Warehouse already archived");
     }
 
     LOGGER.info("Archiving warehouse: " + warehouse.businessUnitCode);
