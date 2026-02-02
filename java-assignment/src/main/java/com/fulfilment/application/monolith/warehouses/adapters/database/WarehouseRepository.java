@@ -33,21 +33,25 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
   @Override
   @Transactional
   public void update(Warehouse warehouse) {
-    DbWarehouse dbWarehouse = this.find("businessUnitCode", warehouse.businessUnitCode).firstResult();
-    if (dbWarehouse == null) {
-      throw new IllegalArgumentException("Warehouse not found for BU Code: " + warehouse.businessUnitCode);
-    }
+    DbWarehouse dbWarehouse = this.find("businessUnitCode = ?1 and archivedAt is null",
+            warehouse.businessUnitCode).firstResult();
 
+    if (dbWarehouse == null) {
+      throw new IllegalArgumentException(
+              "Active warehouse not found for BU Code: " + warehouse.businessUnitCode);
+    }
     dbWarehouse.location = warehouse.location;
     dbWarehouse.capacity = warehouse.capacity;
     dbWarehouse.stock = warehouse.stock;
     dbWarehouse.archivedAt = warehouse.archivedAt;
   }
 
+
   @Override
   @Transactional
   public void remove(Warehouse warehouse) {
-    DbWarehouse dbWarehouse = this.find("businessUnitCode", warehouse.businessUnitCode).firstResult();
+    DbWarehouse dbWarehouse = this.find("businessUnitCode = ?1 and archivedAt is null",
+            warehouse.businessUnitCode).firstResult();
     if (dbWarehouse != null) {
       this.delete(dbWarehouse);
     }
@@ -55,7 +59,11 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
 
   @Override
   public Warehouse findByBusinessUnitCode(String buCode) {
-    DbWarehouse dbWarehouse = this.find("businessUnitCode", buCode).firstResult();
+    DbWarehouse dbWarehouse =
+            this.find("businessUnitCode = ?1 and archivedAt is null", buCode)
+                    .firstResult();
+
     return dbWarehouse == null ? null : dbWarehouse.toWarehouse();
   }
+
 }

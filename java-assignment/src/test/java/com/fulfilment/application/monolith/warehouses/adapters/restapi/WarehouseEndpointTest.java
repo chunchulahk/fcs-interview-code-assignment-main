@@ -38,29 +38,41 @@ public class WarehouseEndpointTest {
                 .then().statusCode(500);
     }
 
+
     @Test
     public void testReplaceWarehouse_success() {
 
-        // Existing warehouse:
-        // MWH.001 → ZWOLLE-001 → capacity 100
+        Warehouse w = new Warehouse();
+        w.setBusinessUnitCode("TEST-MWH-001");
+        w.setLocation("AMSTERDAM-001");
+        w.setCapacity(50);
+        w.setStock(10);
+
+        given()
+                .contentType("application/json")
+                .body(w)
+                .post("/warehouse")
+                .then()
+                .statusCode(200);
 
         String body = """
-        {
-          "location": "ZWOLLE-001",
-          "capacity": 30,
-          "stock": 10
-        }
-        """;
+    {
+      "location": "AMSTERDAM-001",
+      "capacity": 30,
+      "stock": 10
+    }
+    """;
 
         given()
                 .contentType("application/json")
                 .body(body)
                 .when()
-                .post("/warehouse/MWH.001/replacement")
+                .post("/warehouse/TEST-MWH-001/replacement")
                 .then()
                 .statusCode(200)
-                .body("businessUnitCode", equalTo("MWH.001"))
-                .body("capacity", equalTo(100));
+                .body("businessUnitCode", equalTo("TEST-MWH-001"))
+                .body("capacity", equalTo(30))
+                .body("stock", equalTo(10));
     }
 
 
