@@ -2,6 +2,7 @@ package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.fulfilment.application.monolith.common.exceptions.BusinessRuleViolationException;
 import com.fulfilment.application.monolith.location.LocationGateway;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
@@ -63,7 +64,7 @@ class CreateWarehouseUseCaseTest {
         CreateWarehouseUseCase useCase =
                 new CreateWarehouseUseCase(new FakeWarehouseStore(), new LocationGateway());
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(BusinessRuleViolationException.class,
                 () -> useCase.create(null));
     }
 
@@ -77,7 +78,7 @@ class CreateWarehouseUseCaseTest {
         warehouse.capacity = 10;
         warehouse.stock = 5;
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(BusinessRuleViolationException.class,
                 () -> useCase.create(warehouse));
     }
 }

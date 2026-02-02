@@ -2,6 +2,7 @@ package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.fulfilment.application.monolith.common.exceptions.BusinessRuleViolationException;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import java.util.List;
@@ -38,7 +39,7 @@ class ArchiveWarehouseUseCaseTest {
         Warehouse warehouse = new Warehouse();
         warehouse.archivedAt = java.time.LocalDateTime.now();
 
-        assertThrows(IllegalStateException.class,
+        assertThrows(BusinessRuleViolationException.class,
                 () -> useCase.archive(warehouse));
     }
 }
