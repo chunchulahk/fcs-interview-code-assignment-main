@@ -98,7 +98,7 @@ public class StoreResource {
     entity.name = updatedStore.name;
     entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
 
-    // ✅ Call legacy only AFTER successful commit
+    //  Call legacy only AFTER successful commit
     runAfterCommit(() -> legacyStoreManagerGateway.updateStoreOnLegacySystem(entity));
 
     return entity;
@@ -126,7 +126,7 @@ public class StoreResource {
       entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
     }
 
-    // ✅ Call legacy only AFTER successful commit
+    // Call legacy only AFTER successful commit
     runAfterCommit(() -> legacyStoreManagerGateway.updateStoreOnLegacySystem(entity));
 
     return entity;
