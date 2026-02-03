@@ -1,10 +1,8 @@
 package com.fulfilment.application.monolith.products;
 
-import jakarta.persistence.Cacheable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.fulfilment.application.monolith.warehouses.adapters.database.DbWarehouse;
+import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 
 @Entity
@@ -23,6 +21,8 @@ public class Product {
   public BigDecimal price;
 
   public int stock;
+  @ManyToOne
+  public DbWarehouse warehouse;
 
   public Product() {}
 
