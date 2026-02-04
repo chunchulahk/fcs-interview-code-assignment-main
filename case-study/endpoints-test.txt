@@ -88,3 +88,22 @@ curl -X POST "http://localhost:8080/warehouse" ^
 curl -X POST "http://localhost:8080/warehouse" ^
   -H "Content-Type: application/json" ^
   -d "{\"businessUnitCode\":\"BU-001\",\"location\":\"ZWOLLE-001\",\"capacity\":40,\"stock\":10}"
+========================
+FULFILMENT (BONUS TASK)
+========================
+
+Assign Warehouse to Store + Product
+(Constraints enforced in backend)
+
+curl -X POST "http://localhost:8080/fulfilment/assign?storeId=1&productId=1&warehouseId=1"
+
+Example invalid cases to test:
+
+1) Store already has 3 different warehouses
+curl -X POST "http://localhost:8080/fulfilment/assign?storeId=1&productId=2&warehouseId=4"
+
+2) Product already assigned to 2 warehouses for same store
+curl -X POST "http://localhost:8080/fulfilment/assign?storeId=1&productId=1&warehouseId=3"
+
+3) Warehouse already serves 5 products
+curl -X POST "http://localhost:8080/fulfilment/assign?storeId=2&productId=6&warehouseId=1"

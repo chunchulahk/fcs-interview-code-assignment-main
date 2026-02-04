@@ -11,4 +11,9 @@ public interface FulfilmentStore {
     long countProductsForWarehouse(Long warehouseId);
 
     FulfilmentAssignment save(Long storeId, Long productId, Long warehouseId);
+    boolean exists(Long storeId, Long productId, Long warehouseId);
+
+      // 🔥 REQUIRED FOR PRODUCT DELETE (FK SAFE)
+    void deleteByProductId(Long productId);
+
 }

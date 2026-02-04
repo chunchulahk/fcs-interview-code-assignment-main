@@ -2,6 +2,7 @@ package com.fulfilment.application.monolith.products;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fulfilment.application.monolith.fulfillmentmapping.domain.ports.FulfilmentStore;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -27,7 +28,8 @@ import org.jboss.logging.Logger;
 public class ProductResource {
 
   @Inject ProductRepository productRepository;
-
+  @Inject
+  FulfilmentStore fulfilmentStore;
   private static final Logger LOGGER = Logger.getLogger(ProductResource.class.getName());
 
   @GET
@@ -60,7 +62,7 @@ public class ProductResource {
   @Path("{id}")
   @Transactional
   public Product update(Long id, Product product) {
-    if (product.name == null) {
+    if (product.name == null || product.name.isBlank()) {
       throw new WebApplicationException("Product Name was not set on request.", 422);
     }
 
@@ -86,11 +88,16 @@ public class ProductResource {
   public Response delete(Long id) {
     Product entity = productRepository.findById(id);
     if (entity == null) {
-      throw new WebApplicationException("Product with id of " + id + " does not exist.", 404);
+      throw new WebApplicationException(
+              "Product with id of " + id + " does not exist.", 404);
     }
+    //remove fulfilment mappings first
+    fulfilmentStore.deleteByProductId(id);
     productRepository.delete(entity);
+    productRepository.getEntityManager().flush();
     return Response.status(204).build();
   }
+
 
   @Provider
   public static class ErrorMapper implements ExceptionMapper<Exception> {

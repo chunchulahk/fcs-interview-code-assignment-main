@@ -9,14 +9,11 @@ import com.fulfilment.application.monolith.warehouses.domain.ports.CreateWarehou
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.time.LocalDateTime;
-import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class CreateWarehouseUseCase implements CreateWarehouseOperation {
-
-  private static final Logger LOGGER =
-          Logger.getLogger(CreateWarehouseUseCase.class);
 
   private final WarehouseStore warehouseStore;
   private final LocationGateway locationGateway;
@@ -44,23 +41,43 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
       throw new DuplicateResourceException("Business Unit Code already exists");
     }
 
-    Location location = locationGateway.resolveByIdentifier(warehouse.location);
-    if (location == null) {
-      throw new BusinessRuleViolationException("Invalid warehouse location");
+    Location location =
+            locationGateway.resolveByIdentifier(warehouse.location);
+
+        /* =====================================================
+           FIX #1: Max warehouses per location
+           ===================================================== */
+    long activeWarehousesInLocation =
+            warehouseStore.getAll().stream()
+                    .filter(w -> w.archivedAt == null)
+                    .filter(w -> w.location.equals(location.identification))
+                    .count();
+
+    if (activeWarehousesInLocation >= location.maxNumberOfWarehouses) {
+      throw new BusinessRuleViolationException(
+              "Maximum number of warehouses reached for this location");
     }
 
-    if (warehouse.capacity == null || warehouse.capacity > location.maxCapacity) {
-      throw new BusinessRuleViolationException("Capacity exceeds location limit");
+        /* =====================================================
+           FIX #2: Total capacity per location
+           ===================================================== */
+    int usedCapacity =
+            warehouseStore.getAll().stream()
+                    .filter(w -> w.archivedAt == null)
+                    .filter(w -> w.location.equals(location.identification))
+                    .mapToInt(w -> w.capacity)
+                    .sum();
+
+    if (usedCapacity + warehouse.capacity > location.maxCapacity) {
+      throw new BusinessRuleViolationException(
+              "Total warehouse capacity exceeds location limit");
     }
 
-    if (warehouse.stock == null || warehouse.stock > warehouse.capacity) {
+    if (warehouse.stock != null && warehouse.stock > warehouse.capacity) {
       throw new BusinessRuleViolationException("Stock exceeds capacity");
     }
 
     warehouse.createdAt = LocalDateTime.now();
-
-    LOGGER.info("Creating warehouse: " + warehouse.businessUnitCode);
-
     warehouseStore.create(warehouse);
   }
 }

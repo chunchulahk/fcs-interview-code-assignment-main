@@ -2,26 +2,16 @@ package com.fulfilment.application.monolith.fulfillmentmapping.domain;
 
 import com.fulfilment.application.monolith.fulfillmentmapping.FulfilmentAssignment;
 import com.fulfilment.application.monolith.fulfillmentmapping.domain.ports.FulfilmentStore;
-import com.fulfilment.application.monolith.products.Product;
-import com.fulfilment.application.monolith.products.ProductResource;
-import com.fulfilment.application.monolith.stores.Store;
-import com.fulfilment.application.monolith.warehouses.adapters.database.DbWarehouse;
-import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
-import jakarta.inject.Inject;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static io.quarkus.hibernate.orm.panache.PanacheEntityBase.getEntityManager;
-
 public class FakeFulfilmentStore implements FulfilmentStore {
 
     private final Set<FulfilmentAssignment> data = new HashSet<>();
-    @Inject
-    WarehouseStore warehouseStore;
 
-    @Inject
-    ProductResource productResource;
+    // ---------------- COUNTS ----------------
+
     @Override
     public long countWarehousesForStore(Long storeId) {
         return data.stream()
@@ -32,10 +22,13 @@ public class FakeFulfilmentStore implements FulfilmentStore {
     }
 
     @Override
-    public long countWarehousesForStoreAndProduct(Long storeId, Long productId) {
+    public long countWarehousesForStoreAndProduct(
+            Long storeId, Long productId) {
+
         return data.stream()
-                .filter(f -> f.store.id.equals(storeId)
-                        && f.product.id.equals(productId))
+                .filter(f ->
+                        f.store.id.equals(storeId)
+                                && f.product.id.equals(productId))
                 .map(f -> f.warehouse.id)
                 .distinct()
                 .count();
@@ -50,19 +43,60 @@ public class FakeFulfilmentStore implements FulfilmentStore {
                 .count();
     }
 
+    // ---------------- EXISTS ----------------
+
     @Override
-    public FulfilmentAssignment save(Long storeId, Long productId, Long warehouseId) {
+    public boolean exists(
+            Long storeId, Long productId, Long warehouseId) {
+
+        return data.stream().anyMatch(f ->
+                f.store.id.equals(storeId)
+                        && f.product.id.equals(productId)
+                        && f.warehouse.id.equals(warehouseId)
+        );
+    }
+
+    // ---------------- SAVE ----------------
+
+    @Override
+    public FulfilmentAssignment save(
+            Long storeId, Long productId, Long warehouseId) {
+
+        if (exists(storeId, productId, warehouseId)) {
+            throw new IllegalStateException(
+                    "Fulfilment already exists for store, product and warehouse"
+            );
+        }
+
         FulfilmentAssignment fa = new FulfilmentAssignment();
-        DbWarehouse warehouse =
-                getEntityManager().find(DbWarehouse.class, warehouseId);
-        Product products=getEntityManager().find(Product.class, productId);
-        Store store=getEntityManager().find(Store.class, storeId);
         fa.store = TestObjects.store(storeId);
         fa.product = TestObjects.product(productId);
         fa.warehouse = TestObjects.warehouse(warehouseId);
 
-
         data.add(fa);
         return fa;
+    }
+
+    // ----------------  REQUIRED FIX ----------------
+
+    @Override
+    public void deleteByProductId(Long productId) {
+        data.removeIf(f -> f.product.id.equals(productId));
+    }
+
+    // ---------------- TEST HELPERS ----------------
+
+    public void addWarehousesToStore(Long storeId, int count) {
+        for (int i = 0; i < count; i++) {
+            save(storeId, (long) i, (long) i);
+        }
+    }
+
+    public void addProductWarehouses(
+            Long storeId, Long productId, int count) {
+
+        for (int i = 0; i < count; i++) {
+            save(storeId, productId, (long) i);
+        }
     }
 }

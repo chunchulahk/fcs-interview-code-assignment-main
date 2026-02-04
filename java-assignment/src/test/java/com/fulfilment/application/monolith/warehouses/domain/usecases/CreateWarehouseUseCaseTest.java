@@ -42,13 +42,11 @@ class CreateWarehouseUseCaseTest {
     @Test
     void shouldCreateWarehouseSuccessfully() {
         FakeWarehouseStore store = new FakeWarehouseStore();
-        LocationGateway locationGateway = new LocationGateway();
-
         CreateWarehouseUseCase useCase =
-                new CreateWarehouseUseCase(store, locationGateway);
+                new CreateWarehouseUseCase(store, new LocationGateway());
 
         Warehouse warehouse = new Warehouse();
-        warehouse.businessUnitCode = "BU-TEST-001";
+        warehouse.businessUnitCode = "BU-OK";
         warehouse.location = "ZWOLLE-001";
         warehouse.capacity = 20;
         warehouse.stock = 10;
@@ -69,16 +67,49 @@ class CreateWarehouseUseCaseTest {
     }
 
     @Test
-    void shouldFailWhenBusinessUnitCodeMissing() {
+    void shouldFailWhenLocationCapacityExceeded() {
+        FakeWarehouseStore store = new FakeWarehouseStore();
         CreateWarehouseUseCase useCase =
-                new CreateWarehouseUseCase(new FakeWarehouseStore(), new LocationGateway());
+                new CreateWarehouseUseCase(store, new LocationGateway());
 
         Warehouse warehouse = new Warehouse();
-        warehouse.location = "ZWOLLE-001";
-        warehouse.capacity = 10;
-        warehouse.stock = 5;
+        warehouse.businessUnitCode = "WH-CAP";
+        warehouse.location = "AMSTERDAM-001"; // maxCapacity = 100
+        warehouse.capacity = 120;             // exceeds
+        warehouse.stock = 10;
 
-        assertThrows(BusinessRuleViolationException.class,
-                () -> useCase.create(warehouse));
+        assertThrows(
+                BusinessRuleViolationException.class,
+                () -> useCase.create(warehouse)
+        );
     }
+
+    @Test
+    void shouldFailWhenMaxWarehouseCountExceeded() {
+
+        FakeWarehouseStore store = new FakeWarehouseStore();
+        LocationGateway locationGateway = new LocationGateway();
+
+        // EXISTING warehouse in ZWOLLE-001
+        Warehouse existing = new Warehouse();
+        existing.businessUnitCode = "EXISTING-BU";
+        existing.location = "ZWOLLE-001";
+        existing.capacity = 20;
+        existing.archivedAt = null;
+        store.create(existing);
+
+        CreateWarehouseUseCase useCase =
+                new CreateWarehouseUseCase(store, locationGateway);
+
+        Warehouse newWarehouse = new Warehouse();
+        newWarehouse.businessUnitCode = "NEW-BU";
+        newWarehouse.location = "ZWOLLE-001";
+        newWarehouse.capacity = 10;
+
+        assertThrows(
+                BusinessRuleViolationException.class,
+                () -> useCase.create(newWarehouse)
+        );
+    }
+
 }
