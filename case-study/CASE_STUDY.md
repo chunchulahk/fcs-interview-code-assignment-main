@@ -44,3 +44,4 @@
     Before starting the case study, read the [BRIEFING.md](BRIEFING.md) to quickly understand the domain, entities, business rules, and other relevant details.
     
     **Analyze the Scenarios**: Carefully analyze each scenario and consider the tasks provided. To make informed decisions about the project's scope and ensure valuable outcomes, what key information would you seek to gather before defining the boundaries of the work? Your goal is to bridge technical aspects with business value, bringing a high level discussion; no need to deep dive.
+    Understanding current cost structure, data availability from financial systems, warehouse/store capacity constraints, and business priorities is critical to define clear scope and deliver measurable value.
